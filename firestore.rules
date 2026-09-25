@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Connection testing collection
+    match /test/connection {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // User Profile Rules
+    match /users/{userId} {
+      allow get: if isSignedIn() && (isOwner(userId) || request.auth.token.email == 'naveencodes247@gmail.com');
+      allow list: if isSignedIn() && request.auth.token.email == 'naveencodes247@gmail.com';
+      allow create: if isSignedIn() && isOwner(userId) && isValidId(userId);
+      allow update: if isSignedIn() && (isOwner(userId) || request.auth.token.email == 'naveencodes247@gmail.com');
+      allow delete: if false;
+
+      // Plots subcollection under users
+      match /plots/{plotId} {
+        allow get: if isSignedIn() && (isOwner(userId) || request.auth.token.email == 'naveencodes247@gmail.com');
+        allow list: if isSignedIn() && (isOwner(userId) || request.auth.token.email == 'naveencodes247@gmail.com');
+        allow create, update: if isSignedIn() && (isOwner(userId) || request.auth.token.email == 'naveencodes247@gmail.com') && isValidId(plotId);
+        allow delete: if isSignedIn() && (isOwner(userId) || request.auth.token.email == 'naveencodes247@gmail.com');
+      }
+    }
+
+    // Alerts collection
+    match /alerts/{alertId} {
+      allow get, list: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(alertId);
+      allow delete: if isSignedIn() && request.auth.token.email == 'naveencodes247@gmail.com';
+    }
+  }
+}

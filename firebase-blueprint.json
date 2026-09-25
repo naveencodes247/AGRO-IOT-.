@@ -1,0 +1,183 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile in the Indian Agro-IoT ecosystem (Farmer, Coordinator, Admin) with role, verification, and contact information.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID or system user identifier."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the user.",
+          "maxLength": 100
+        },
+        "nameHi": {
+          "type": "string",
+          "description": "Name in Hindi script.",
+          "maxLength": 100
+        },
+        "role": {
+          "type": "string",
+          "enum": ["farmer", "coordinator", "admin"],
+          "description": "User access role in the agro-ecosystem."
+        },
+        "authMethod": {
+          "type": "string",
+          "enum": ["phone", "email", "whatsapp", "google", "demo"],
+          "description": "Method used for authentication."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "Phone number with country code."
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Email address of the user."
+        },
+        "whatsapp": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "WhatsApp contact number."
+        },
+        "organization": {
+          "type": "string",
+          "maxLength": 150,
+          "description": "Farm, KVK, or Institution name."
+        },
+        "designation": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Designation or title."
+        },
+        "location": {
+          "type": "string",
+          "maxLength": 150,
+          "description": "State, district or agricultural zone."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Profile registration timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        }
+      },
+      "required": ["userId", "name", "role", "createdAt"]
+    },
+    "FarmPlotTelemetry": {
+      "title": "FarmPlotTelemetry",
+      "description": "Snapshot of farm plot environmental, soil, and irrigation telemetry.",
+      "type": "object",
+      "properties": {
+        "plotId": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "farmerId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "plotName": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "soilMoisture": {
+          "type": "number"
+        },
+        "soilTemperature": {
+          "type": "number"
+        },
+        "airTemperature": {
+          "type": "number"
+        },
+        "humidity": {
+          "type": "number"
+        },
+        "irrigationStatus": {
+          "type": "string",
+          "enum": ["OFF", "ON", "SCHEDULED"]
+        },
+        "healthScore": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["plotId", "farmerId", "plotName", "updatedAt"]
+    },
+    "AgriAlert": {
+      "title": "AgriAlert",
+      "description": "Advisory alerts and sensor threshold warnings for Indian farms.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "farmerId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "plotId": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 150
+        },
+        "category": {
+          "type": "string",
+          "enum": ["critical", "warning", "information"]
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "recommendedAction": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "acknowledged", "resolved"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "farmerId", "title", "category", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Collection of user profiles containing role, name, and contact details."
+    },
+    "/users/{userId}/plots/{plotId}": {
+      "schema": {
+        "$ref": "#/entities/FarmPlotTelemetry"
+      },
+      "description": "Farm plot telemetry documents subcollection for each farmer."
+    },
+    "/alerts/{alertId}": {
+      "schema": {
+        "$ref": "#/entities/AgriAlert"
+      },
+      "description": "Agro-ecosystem advisory alerts."
+    }
+  }
+}

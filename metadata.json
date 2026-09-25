@@ -1,0 +1,6 @@
+{
+  "name": "AGRO-IOT | Smart Agriculture & Farm Intelligence Platform",
+  "description": "Smart IoT farming platform for Indian farmers combining farm monitoring, crop health analysis, agricultural intelligence, offline-ready decision support, and Kisan helpline.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
