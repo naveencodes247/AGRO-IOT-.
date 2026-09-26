@@ -528,7 +528,7 @@ class LiveFarmSimulationEngine {
     // 1. Hydraulic response if irrigation is running
     if (this.state.water.pumpActive) {
       // Flow consumes water from tank
-      this.state.water.tankLevelPercent = Math.max(10, this.state.water.tankLevelPercent - 0.4);
+      this.state.water.tankLevelPercent = Math.max(10, Math.round(this.state.water.tankLevelPercent - 0.5));
       this.state.water.dailyUsageLitres += 37;
       // Moisture rises gradually
       const prevMoisture = this.state.soil.moisture;

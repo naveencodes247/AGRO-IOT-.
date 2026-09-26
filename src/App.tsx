@@ -46,10 +46,10 @@ export default function App() {
     return (saved === 'hi' || saved === 'en') ? saved : 'en';
   });
 
-  // Theme State ('system' | 'light' | 'dark')
+  // Theme State ('system' | 'light' | 'dark') - Defaults to light mode to match reference screenshot
   const [theme, setTheme] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('agro_iot_theme');
-    return (saved === 'light' || saved === 'dark' || saved === 'system') ? saved : 'dark';
+    return (saved === 'light' || saved === 'dark' || saved === 'system') ? saved : 'light';
   });
 
   // Farm Data Source Mode ('demo' vs 'empty'/'live')
@@ -63,6 +63,22 @@ export default function App() {
 
   // Connect farm quick modal state
   const [isConnectFarmModalOpen, setIsConnectFarmModalOpen] = useState<boolean>(false);
+
+  // Auto-collapsing header when scrolling down
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(false);
+  const lastScrollTopRef = React.useRef<number>(0);
+
+  const handleMainScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScrollTop = e.currentTarget.scrollTop;
+    if (currentScrollTop > lastScrollTopRef.current + 8 && currentScrollTop > 60) {
+      // Scrolling down -> smoothly collapse header upward
+      setIsHeaderCollapsed(true);
+    } else if (currentScrollTop < lastScrollTopRef.current - 8 || currentScrollTop <= 20) {
+      // Scrolling up or back near top -> expand header
+      setIsHeaderCollapsed(false);
+    }
+    lastScrollTopRef.current = currentScrollTop;
+  };
 
   // Theme effect - applies .dark and data-theme to documentElement
   useEffect(() => {
@@ -156,29 +172,9 @@ export default function App() {
   const pendingRecCount = recommendations.filter(r => r.status === 'pending').length;
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-[#fbf9f5] dark:bg-[#0e110f] text-stone-900 dark:text-stone-100 font-sans selection:bg-[#143e24] selection:text-white transition-colors duration-150">
-      {/* Top Header with System Status, Hardware Indicators, Scenario Selector, and Live/Demo Mode */}
-      <Header
-        currentTab={currentTab}
-        onNavigate={setCurrentTab}
-        userRole={userRole}
-        onSelectRole={setUserRole}
-        lang={lang}
-        onToggleLang={handleToggleLang}
-        theme={theme}
-        onToggleTheme={handleToggleTheme}
-        onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        isMobileMenuOpen={isMobileMenuOpen}
-        isLiveMode={dataSourceMode !== 'demo'}
-        onToggleLiveMode={handleToggleDemoMode}
-        scenario={scenario}
-        onSelectScenario={setScenario}
-        alertCount={activeAlertCount}
-      />
-
-      {/* Main Container: Left Sidebar + Central Scrollable Content Area */}
-      <div className="flex-1 flex w-full">
-        {/* Left Sidebar with FIELD INTELLIGENCE nav and bottom 3-line real-time crop update bar */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#f4f7f5] dark:bg-[#0b100d] text-stone-900 dark:text-stone-100 font-sans selection:bg-[#0fa958] selection:text-white transition-colors duration-150">
+      {/* Left Sidebar (Desktop/Tablet - Smoothly Collapsible) */}
+      <div className="hidden md:flex flex-shrink-0 h-screen sticky top-0 transition-all duration-300">
         <Sidebar
           currentTab={currentTab}
           onNavigate={setCurrentTab}
@@ -187,25 +183,48 @@ export default function App() {
           recommendationCount={pendingRecCount}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          activeCrop="Soybean (JS-335)"
-          activeStage="Vegetative (V4)"
-          activePlotName="Uttari Khet — Plot A"
         />
+      </div>
 
-        {/* Mobile Navigation Drawer */}
-        <MobileNav
-          isOpen={isMobileMenuOpen}
-          onClose={() => setIsMobileMenuOpen(false)}
+      {/* Mobile Navigation Drawer */}
+      <MobileNav
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        currentTab={currentTab}
+        onNavigate={setCurrentTab}
+        lang={lang}
+        userRole={userRole}
+        alertCount={activeAlertCount}
+        recommendationCount={pendingRecCount}
+      />
+
+      {/* Right: Main Application Area with Sticky Top Header + Scrollable Content */}
+      <div 
+        className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto scroll-smooth"
+        onScroll={handleMainScroll}
+      >
+        {/* Top Compact Header (Auto-collapses on scroll down) */}
+        <Header
           currentTab={currentTab}
           onNavigate={setCurrentTab}
-          lang={lang}
           userRole={userRole}
+          onSelectRole={setUserRole}
+          lang={lang}
+          onToggleLang={handleToggleLang}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+          onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          isMobileMenuOpen={isMobileMenuOpen}
+          isLiveMode={dataSourceMode !== 'demo'}
+          onToggleLiveMode={handleToggleDemoMode}
+          scenario={scenario}
+          onSelectScenario={setScenario}
           alertCount={activeAlertCount}
-          recommendationCount={pendingRecCount}
+          isCollapsed={isHeaderCollapsed}
         />
 
         {/* Central Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-7 max-w-7xl mx-auto w-full overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-5 lg:p-6 max-w-[1600px] w-full mx-auto">
           {/* Tab 1: Farm Command Center (Matches Reference Screenshot) */}
           {currentTab === 'command-center' && (
             <FarmCommandCenterView
@@ -322,6 +341,23 @@ export default function App() {
             />
           )}
         </main>
+
+        {/* Minimal Compact Footer */}
+        <footer className="border-t border-stone-200/80 dark:border-stone-800/80 bg-white dark:bg-[#111613] py-3.5 text-xs text-stone-500 dark:text-stone-400 mt-auto">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
+            <div className="flex items-center gap-2">
+              <AgroIotLogo size="sm" showText={true} />
+              <span className="hidden sm:inline text-stone-400">• Smart Farming Platform (India)</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span>ESP32 + LoRaWAN Telemetry (865 MHz)</span>
+              <span>•</span>
+              <a href={HELPLINE_TEL_HREF} className="text-[#0fa958] font-bold hover:underline">
+                Helpline: {HELPLINE_NUMBER}
+              </a>
+            </div>
+          </div>
+        </footer>
       </div>
 
       {/* Global Farm Connect Modal */}
@@ -352,30 +388,13 @@ export default function App() {
                 handleToggleDemoMode();
                 setIsConnectFarmModalOpen(false);
               }}
-              className="px-4 py-2 rounded-lg bg-[#143e24] hover:bg-[#1a4f2e] text-white font-bold cursor-pointer"
+              className="px-4 py-2 rounded-lg bg-[#0fa958] hover:bg-[#13b963] text-white font-bold cursor-pointer"
             >
               Pair Gateway & Load Telemetry
             </button>
           </div>
         </div>
       </Modal>
-
-      {/* Minimal Footer */}
-      <footer className="border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-[#111311] py-4 text-xs text-stone-500 dark:text-stone-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
-          <div className="flex items-center gap-2">
-            <AgroIotLogo size="sm" showText={true} />
-            <span className="hidden sm:inline text-stone-400">• Smart Agriculture India</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span>Offline-First (ESP32 + LoRa 865 MHz)</span>
-            <span>•</span>
-            <a href={HELPLINE_TEL_HREF} className="text-emerald-700 dark:text-emerald-400 font-semibold hover:underline">
-              Helpline: {HELPLINE_NUMBER}
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

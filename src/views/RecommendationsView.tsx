@@ -4,14 +4,17 @@ import {
   CheckCircle2, 
   Filter, 
   Clock, 
-  AlertCircle, 
   Droplets, 
   ShieldAlert, 
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Sprout,
+  Check
 } from 'lucide-react';
-import { Language, Recommendation, RecommendationPriority, RecommendationCategory } from '../types';
-import { DemoBadge } from '../components/common/DemoBadge';
+import { Language, Recommendation } from '../types';
+import { PageHeader } from '../components/common/PageHeader';
+import { Card } from '../components/common/Card';
+import { StatusBadge } from '../components/common/StatusBadge';
 import { EmptyState } from '../components/common/EmptyState';
 
 interface RecommendationsViewProps {
@@ -39,63 +42,52 @@ export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
   });
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200/80 dark:border-stone-800/80">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-              {lang === 'hi' ? 'कृषि विज्ञान सिफारिशें' : 'Agronomic Decision Recommendations'}
-            </h2>
-            <DemoBadge mode={isDemoMode ? 'demo' : 'waiting'} onToggleMode={onToggleDemoMode} />
-          </div>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            {lang === 'hi'
-              ? 'सेंसर अवलोकन, फसल चरण और मौसम स्थिति पर आधारित विशेषज्ञ कार्रवाई'
-              : 'Rule-based decision support correlating soil moisture, microclimate, and crop growth stage'}
-          </p>
-        </div>
-
-        {/* Priority Filter */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800 p-1 rounded-lg text-xs font-semibold">
+    <div className="space-y-5 select-none font-sans pb-10">
+      {/* Page Header */}
+      <PageHeader
+        title={lang === 'hi' ? 'कृषि विज्ञान सिफारिशें' : 'Recommendations'}
+        subtitle={lang === 'hi'
+          ? 'सेंसर अवलोकन, फसल चरण और मौसम स्थिति पर आधारित विशेषज्ञ कार्रवाई'
+          : 'Rule-based decision support correlating soil moisture, microclimate, and crop growth stage'}
+        actions={
+          <div className="flex items-center gap-1 p-1 bg-stone-100 dark:bg-stone-850 rounded-xl text-xs font-semibold">
             {['All', 'Critical', 'High', 'Medium'].map((p) => (
               <button
                 key={p}
                 onClick={() => setSelectedPriority(p)}
-                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-xs ${
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                   selectedPriority === p
-                    ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-xs font-bold'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                    ? 'bg-white dark:bg-stone-750 text-stone-900 dark:text-stone-100 font-bold shadow-xs'
+                    : 'text-stone-500 hover:text-stone-900'
                 }`}
               >
                 {p}
               </button>
             ))}
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Category Pills Filter */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 flex items-center gap-1">
-          <Filter className="w-3.5 h-3.5" />
-          {lang === 'hi' ? 'श्रेणी फ़िल्टर' : 'Filter Category'}:
+        <span className="text-xs font-semibold text-stone-400 flex items-center gap-1 mr-1">
+          <Filter className="w-3.5 h-3.5 text-stone-400" />
+          <span>Category:</span>
         </span>
         {[
           { id: 'All', label: 'All Categories' },
           { id: 'irrigation', label: 'Irrigation' },
-          { id: 'fertilizer', label: 'Fertilizer & Nutrition' },
+          { id: 'fertilizer', label: 'Nutrition & Fertilizer' },
           { id: 'pest_control', label: 'Pest & Disease' },
           { id: 'soil_health', label: 'Soil Health' }
         ].map((c) => (
           <button
             key={c.id}
             onClick={() => setSelectedCategory(c.id)}
-            className={`text-xs px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
+            className={`text-xs px-3 py-1 rounded-full font-semibold transition-all cursor-pointer ${
               selectedCategory === c.id
-                ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
-                : 'bg-white dark:bg-stone-850 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-750 hover:bg-stone-100'
+                ? 'bg-[#0fa958] text-white shadow-2xs'
+                : 'bg-white dark:bg-[#141b16] border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850'
             }`}
           >
             {c.label}
@@ -103,122 +95,86 @@ export const RecommendationsView: React.FC<RecommendationsViewProps> = ({
         ))}
       </div>
 
-      {/* Empty State */}
+      {/* Recommendations List */}
       {filtered.length === 0 ? (
         <EmptyState
           icon={Lightbulb}
-          title={lang === 'hi' ? 'कोई सिफारिश उपलब्ध नहीं है' : 'No Recommendations Found'}
-          description={lang === 'hi'
-            ? 'चयनित फ़िल्टर के अनुसार कोई सिफारिश नहीं मिली। या खेत डेटा कनेक्ट होने की प्रतीक्षा करें।'
-            : 'No agronomic recommendations match the selected filters, or waiting for farm sensor connection.'}
-          actionLabel={lang === 'hi' ? 'फ़िल्टर हटाएं' : 'Reset Filters'}
-          onAction={() => { setSelectedPriority('All'); setSelectedCategory('All'); }}
-          secondaryActionLabel={!isDemoMode ? (lang === 'hi' ? 'डेमो डेटा लोड करें' : 'Load Demo Recommendations') : undefined}
-          onSecondaryAction={!isDemoMode ? onToggleDemoMode : undefined}
+          title="No recommendations match the filter"
+          description="All current field conditions are within safe agronomic parameters. Check back when microclimate alerts trigger."
+          actionLabel="Reset Filters"
+          onAction={() => {
+            setSelectedPriority('All');
+            setSelectedCategory('All');
+          }}
         />
       ) : (
-        /* Structured Recommendation Cards adhering strictly to:
-           OBSERVATION, REASON, ACTION, PRIORITY, TIME */
-        <div className="grid grid-cols-1 gap-5">
+        <div className="space-y-3">
           {filtered.map((rec) => {
-            const isApplied = rec.status === 'applied';
-
+            const isCritical = rec.priority === 'critical' || rec.priority === 'high';
             return (
-              <div
-                key={rec.id}
-                className={`p-6 rounded-xl border bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs transition-all ${
-                  isApplied 
-                    ? 'border-emerald-300 dark:border-emerald-900/60 opacity-80' 
-                    : 'border-stone-200/90 dark:border-stone-800 hover:border-emerald-500/40'
-                }`}
-              >
-                {/* Header line: Title, Category, Priority, Time */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200/80 dark:border-stone-800/80">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
-                      <Lightbulb className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                        {rec.title}
-                      </h3>
-                      {rec.plotName && (
-                        <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                          Plot Target: {rec.plotName}
-                        </span>
+              <Card key={rec.id} className="p-4 sm:p-5 transition-all">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      isCritical
+                        ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-600'
+                        : 'bg-emerald-50 dark:bg-emerald-950/60 text-[#0fa958]'
+                    }`}>
+                      {rec.category === 'irrigation' ? (
+                        <Droplets className="w-5 h-5" />
+                      ) : (
+                        <Sprout className="w-5 h-5" />
                       )}
                     </div>
+
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                          {rec.title}
+                        </h3>
+                        <StatusBadge
+                          status={rec.priority.toUpperCase()}
+                          variant={rec.priority === 'critical' ? 'critical' : rec.priority === 'high' ? 'high' : 'medium'}
+                          size="xs"
+                        />
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 font-medium">
+                          {rec.plotName}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-medium">
+                        {rec.description}
+                      </p>
+
+                      <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-850/60 border border-stone-200/60 dark:border-stone-800/60 text-xs text-stone-700 dark:text-stone-300 mt-2">
+                        <strong className="text-emerald-700 dark:text-emerald-400 mr-1.5 font-bold">Recommended Action:</strong>
+                        <span>{rec.suggestedAction}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs text-stone-400 flex items-center gap-1 font-mono">
-                      <Clock className="w-3.5 h-3.5" />
-                      {rec.time}
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-100 dark:border-stone-800">
+                    <span className="text-[10px] text-stone-400 font-mono flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>{rec.time}</span>
                     </span>
 
-                    <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wider ${
-                      rec.priority === 'critical' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300' :
-                      rec.priority === 'high' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300' :
-                      'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300'
-                    }`}>
-                      PRIORITY: {rec.priority}
-                    </span>
+                    {rec.status === 'applied' ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 py-1.5 px-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40">
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Action Executed</span>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => onApplyRecommendation(rec.id)}
+                        className="px-3.5 py-1.5 rounded-xl bg-[#0fa958] hover:bg-[#13b963] active:bg-[#0d8f4a] text-white text-xs font-bold shadow-xs cursor-pointer transition-all"
+                      >
+                        Apply Action
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                {/* Structured Body: OBSERVATION -> REASON -> ACTION */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4 text-xs">
-                  {/* OBSERVATION */}
-                  <div className="p-3.5 rounded-lg bg-stone-50 dark:bg-stone-950/60 border border-stone-200/70 dark:border-stone-800 space-y-1">
-                    <div className="font-extrabold uppercase tracking-wider text-stone-500 dark:text-stone-400 text-[10px]">
-                      {lang === 'hi' ? 'निरीक्षण (OBSERVATION)' : 'OBSERVATION'}
-                    </div>
-                    <p className="text-stone-800 dark:text-stone-200 leading-relaxed font-medium">
-                      {rec.observation}
-                    </p>
-                  </div>
-
-                  {/* REASON */}
-                  <div className="p-3.5 rounded-lg bg-stone-50 dark:bg-stone-950/60 border border-stone-200/70 dark:border-stone-800 space-y-1">
-                    <div className="font-extrabold uppercase tracking-wider text-stone-500 dark:text-stone-400 text-[10px]">
-                      {lang === 'hi' ? 'कृषि वैज्ञानिक कारण (REASON)' : 'REASON'}
-                    </div>
-                    <p className="text-stone-800 dark:text-stone-200 leading-relaxed">
-                      {rec.reason}
-                    </p>
-                  </div>
-
-                  {/* ACTION */}
-                  <div className="p-3.5 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-300/70 dark:border-emerald-800 space-y-1">
-                    <div className="font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 text-[10px]">
-                      {lang === 'hi' ? 'अनुशंसित कार्रवाई (ACTION)' : 'ACTION'}
-                    </div>
-                    <p className="text-emerald-900 dark:text-emerald-200 leading-relaxed font-bold">
-                      {rec.action}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Action status & execution button */}
-                <div className="pt-3 border-t border-stone-200/70 dark:border-stone-800 flex items-center justify-between">
-                  <div className="text-[11px] text-stone-500 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span>Agronomic Engine: Verified Wheat/Mustard Guidance Model</span>
-                  </div>
-
-                  <button
-                    onClick={() => onApplyRecommendation(rec.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      isApplied
-                        ? 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
-                        : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs'
-                    }`}
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>{isApplied ? (lang === 'hi' ? 'कार्रवाई पूर्ण' : 'Action Recorded') : (lang === 'hi' ? 'कार्रवाई लागू करें' : 'Mark as Applied')}</span>
-                  </button>
-                </div>
-              </div>
+              </Card>
             );
           })}
         </div>

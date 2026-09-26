@@ -12,11 +12,14 @@ import {
   ChevronRight,
   Sparkles,
   Smartphone,
-  Cpu
+  Cpu,
+  User,
+  Phone
 } from 'lucide-react';
 import { Farm, FarmPlot, Language } from '../types';
-import { DemoBadge } from '../components/common/DemoBadge';
-import { EmptyState } from '../components/common/EmptyState';
+import { PageHeader } from '../components/common/PageHeader';
+import { Card, CardHeader } from '../components/common/Card';
+import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
 
 interface FarmInformationViewProps {
@@ -33,8 +36,6 @@ export const FarmInformationView: React.FC<FarmInformationViewProps> = ({
   onConnectFarm,
   onAddPlot,
   lang,
-  isDemoMode,
-  onToggleDemoMode,
 }) => {
   const [isAddPlotModalOpen, setIsAddPlotModalOpen] = useState(false);
   const [isConnectFarmModalOpen, setIsConnectFarmModalOpen] = useState(false);
@@ -45,7 +46,7 @@ export const FarmInformationView: React.FC<FarmInformationViewProps> = ({
   const [phone, setPhone] = useState('+91 9301929218');
   const [state, setState] = useState('Punjab');
   const [district, setDistrict] = useState('Ludhiana');
-  const [totalAcres, setTotalAcres] = useState(10);
+  const [totalAcres, setTotalAcres] = useState(12.5);
 
   // New Plot form state
   const [plotName, setPlotName] = useState('');
@@ -84,295 +85,198 @@ export const FarmInformationView: React.FC<FarmInformationViewProps> = ({
     setPlotName('');
   };
 
-  if (!farm || !isDemoMode) {
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-                {lang === 'hi' ? 'खेत की जानकारी एवं व्यवस्था' : 'Farm Profile & Plot Management'}
-              </h2>
-              <DemoBadge mode="waiting" onToggleMode={onToggleDemoMode} />
-            </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400">
-              {lang === 'hi' ? 'खेत की भौगोलिक स्थिति, मिट्टी और फसल का विवरण' : 'Geographic parcel coordinates, soil characteristics, and active plots'}
-            </p>
-          </div>
-
-          <button
-            onClick={() => setIsConnectFarmModalOpen(true)}
-            className="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
-          >
-            {lang === 'hi' ? 'नया खेत जोड़ें' : 'Connect Farm'}
-          </button>
-        </div>
-
-        <EmptyState
-          icon={Layers}
-          badge="NO FARM CONNECTED YET"
-          title={lang === 'hi' ? 'कोई खेत कनेक्टेड नहीं है' : 'No Farm Registered Yet'}
-          description={lang === 'hi'
-            ? 'निगरानी शुरू करने के लिए अपने खेत और भूखंड का विवरण दर्ज करें, अथवा पूर्वावलोकन के लिए डेमो खेत लोड करें।'
-            : 'Register your land coordinates, soil classification, and active seasonal crops to start telemetry monitoring, or load the demo farm to inspect the interface.'}
-          actionLabel={lang === 'hi' ? 'खेत पंजीकृत करें' : 'Register New Farm'}
-          onAction={() => setIsConnectFarmModalOpen(true)}
-          secondaryActionLabel={lang === 'hi' ? 'डेमो खेत देखें' : 'View Demo Farm'}
-          onSecondaryAction={onToggleDemoMode}
-        />
-
-        {/* Connect Farm Modal */}
-        <Modal
-          isOpen={isConnectFarmModalOpen}
-          onClose={() => setIsConnectFarmModalOpen(false)}
-          title={lang === 'hi' ? 'खेत कनेक्शन विज़ार्ड' : 'Register Farm & Field Gateway'}
-          subtitle="Pair local ESP32 controller and set regional agronomic parameters"
-        >
-          <form onSubmit={handleConnectSubmit} className="space-y-4 text-xs">
-            <div>
-              <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                Farm or Holding Name
-              </label>
-              <input
-                type="text"
-                required
-                value={farmName}
-                onChange={e => setFarmName(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-                placeholder="e.g. Kisan Model Farm"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                  Farmer Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={farmerName}
-                  onChange={e => setFarmerName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-                />
-              </div>
-              <div>
-                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                  Contact Mobile Number
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                  State
-                </label>
-                <select
-                  value={state}
-                  onChange={e => setState(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-                >
-                  <option value="Punjab">Punjab</option>
-                  <option value="Haryana">Haryana</option>
-                  <option value="Uttar Pradesh">Uttar Pradesh</option>
-                  <option value="Madhya Pradesh">Madhya Pradesh</option>
-                  <option value="Maharashtra">Maharashtra</option>
-                  <option value="Gujarat">Gujarat</option>
-                  <option value="Rajasthan">Rajasthan</option>
-                </select>
-              </div>
-              <div>
-                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                  District
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={district}
-                  onChange={e => setDistrict(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-                />
-              </div>
-              <div>
-                <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                  Total Land (Acres)
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={totalAcres}
-                  onChange={e => setTotalAcres(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-                />
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-stone-200 dark:border-stone-800 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsConnectFarmModalOpen(false)}
-                className="px-4 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold"
-              >
-                Save & Initialize Farm
-              </button>
-            </div>
-          </form>
-        </Modal>
-      </div>
-    );
-  }
+  const currentFarm = farm || {
+    id: 'farm-pb-104',
+    name: 'Kisan Shanti Krishi Farm',
+    farmerName: 'Sardar Gurpreet Singh',
+    phone: '+91 9301929218',
+    state: 'Punjab',
+    district: 'Ludhiana',
+    village: 'Samrala Kalan',
+    totalAcres: 12.5,
+    status: 'active' as const,
+    dataSource: 'demo' as const,
+    gatewayId: 'AGRO-ESP32-GW-901',
+    batteryLevel: 94,
+    signalStrength: 82,
+    plots: [
+      {
+        id: 'plot-1',
+        name: 'North Block (Wheat)',
+        sizeAcres: 5.5,
+        cropName: 'Wheat (HD-3086)',
+        cropVariety: 'Pusa Gautami',
+        sowingDate: '2026-11-12',
+        cropStage: 'Tillering' as const,
+        soilType: 'Loamy Alluvial',
+        irrigationType: 'Drip' as const,
+        sensorNodeId: 'NODE-ESP32-W1',
+        healthScore: 88,
+      },
+      {
+        id: 'plot-2',
+        name: 'South Terrace (Mustard)',
+        sizeAcres: 4.0,
+        cropName: 'Mustard (Giriraj)',
+        cropVariety: 'DRMRIJ-31',
+        sowingDate: '2026-10-20',
+        cropStage: 'Flowering' as const,
+        soilType: 'Sandy Loam',
+        irrigationType: 'Sprinkler' as const,
+        sensorNodeId: 'NODE-ESP32-M2',
+        healthScore: 82,
+      },
+      {
+        id: 'plot-3',
+        name: 'Riverbank Sector (Potato)',
+        sizeAcres: 3.0,
+        cropName: 'Potato (Kufri Jyoti)',
+        cropVariety: 'Kufri Jyoti Early',
+        sowingDate: '2026-10-28',
+        cropStage: 'Vegetative' as const,
+        soilType: 'Alluvial Silt',
+        irrigationType: 'Flood / Furrow' as const,
+        sensorNodeId: 'NODE-ESP32-P3',
+        healthScore: 74,
+      }
+    ]
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200/80 dark:border-stone-800/80">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-              {lang === 'hi' ? 'खेत की जानकारी एवं भूखंड' : 'Farm Information & Field Parcels'}
-            </h2>
-            <DemoBadge mode="demo" onToggleMode={onToggleDemoMode} />
-          </div>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            {lang === 'hi'
-              ? 'खेत का प्रशासनिक पता, मिट्टी की संरचना और सक्रिय फसल भूखंड'
-              : 'Land records, soil typology, crop growth stage, and sensor pairing'}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsAddPlotModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>{lang === 'hi' ? 'नया भूखंड (Plot) जोड़ें' : 'Add Field Plot'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Farm Profile Summary Banner */}
-      <div className="bg-white/90 dark:bg-stone-900/90 backdrop-blur-md rounded-xl border border-stone-200/80 dark:border-stone-800/80 p-6 shadow-xs">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-              Farm & Landholder
-            </span>
-            <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">
-              {farm.name}
-            </h3>
-            <p className="text-xs text-stone-600 dark:text-stone-300">
-              Owner: {farm.farmerName} ({farm.phone})
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-              Location & Jurisdiction
-            </span>
-            <div className="flex items-center gap-1.5 text-xs text-stone-800 dark:text-stone-200 font-medium">
-              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{farm.village}, {farm.district}</span>
-            </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400">
-              {farm.state} (Indo-Gangetic Plain)
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-              Holding Extent & Season
-            </span>
-            <div className="text-sm font-bold text-stone-900 dark:text-stone-100">
-              {farm.totalAcres} Acres ({farm.plots.length} Sub-Plots)
-            </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400">
-              Season: Rabi 2026-2027
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-              IoT Hardware Status
-            </span>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-              <Radio className="w-3.5 h-3.5" />
-              <span>Gateway: {farm.gatewayId}</span>
-            </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400">
-              Battery: {farm.batteryLevel}% · Signal: Good
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Plot Breakdown Cards */}
-      <div>
-        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 mb-3 flex items-center gap-2">
-          <Layers className="w-4 h-4 text-emerald-600" />
-          <span>Active Agricultural Plots ({farm.plots.length})</span>
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {farm.plots.map((plot) => (
-            <div
-              key={plot.id}
-              className="p-5 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs space-y-4 hover:border-emerald-500/40 transition-colors"
+    <div className="space-y-5 select-none font-sans pb-10">
+      {/* Unified Page Header */}
+      <PageHeader
+        title={lang === 'hi' ? 'खेत की जानकारी' : 'Farm Information'}
+        subtitle={lang === 'hi'
+          ? 'खेत की भौगोलिक स्थिति, मिट्टी और फसल का विवरण'
+          : 'Geographic parcel coordinates, soil characteristics, and active plots'}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsAddPlotModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0fa958] hover:bg-[#13b963] active:bg-[#0d8f4a] text-white text-xs font-bold shadow-xs cursor-pointer transition-all"
             >
-              <div className="flex items-start justify-between gap-2 pb-3 border-b border-stone-100 dark:border-stone-800">
-                <div>
-                  <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                    {plot.name}
-                  </h4>
-                  <span className="text-xs text-stone-500 dark:text-stone-400">
-                    Area: {plot.sizeAcres} Acres
-                  </span>
-                </div>
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-                  {plot.cropStage}
-                </span>
-              </div>
+              <Plus className="w-4 h-4" />
+              <span>{lang === 'hi' ? 'प्लॉट जोड़ें' : 'Add Plot'}</span>
+            </button>
+            <button
+              onClick={() => setIsConnectFarmModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#141b16] hover:bg-stone-50 text-xs font-semibold text-stone-700 dark:text-stone-300 shadow-2xs cursor-pointer transition-all"
+            >
+              <span>{lang === 'hi' ? 'खेत संपादित करें' : 'Edit Farm'}</span>
+            </button>
+          </div>
+        }
+      />
 
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-stone-500 dark:text-stone-400">Crop Cultivar:</span>
-                  <span className="font-bold text-stone-800 dark:text-stone-200">{plot.cropName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-500 dark:text-stone-400">Soil Type:</span>
-                  <span className="font-medium text-stone-800 dark:text-stone-200">{plot.soilType}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-500 dark:text-stone-400">Irrigation Method:</span>
-                  <span className="font-medium text-stone-800 dark:text-stone-200">{plot.irrigationType}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-500 dark:text-stone-400">Sensor Node:</span>
-                  <span className="font-mono text-stone-700 dark:text-stone-300">{plot.sensorNodeId}</span>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between">
-                <span className="text-[11px] text-stone-500">Plot Health Index:</span>
-                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                  {plot.healthScore}/100 (Optimal)
-                </span>
-              </div>
+      {/* Farm Overview Card */}
+      <Card className="p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
+                {currentFarm.name}
+              </h2>
+              <StatusBadge status="ACTIVE" variant="healthy" size="xs" dot={true} />
             </div>
+            <p className="text-xs text-stone-400 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span>{currentFarm.village}, {currentFarm.district}, {currentFarm.state} • India</span>
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs">
+            <div className="flex flex-col text-right">
+              <span className="text-[10px] text-stone-400 uppercase tracking-wider font-semibold">Total Area</span>
+              <span className="font-extrabold text-stone-800 dark:text-stone-200">{currentFarm.totalAcres} Acres</span>
+            </div>
+            <div className="flex flex-col text-right">
+              <span className="text-[10px] text-stone-400 uppercase tracking-wider font-semibold">Gateway</span>
+              <span className="font-mono text-emerald-600 font-bold">{currentFarm.gatewayId}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 4-column quick specs */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 text-xs">
+          <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-850/60 border border-stone-200/60 dark:border-stone-800/60">
+            <span className="text-[10px] text-stone-400 font-semibold uppercase">Farmer</span>
+            <div className="font-bold text-stone-800 dark:text-stone-100 mt-0.5">{currentFarm.farmerName}</div>
+          </div>
+          <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-850/60 border border-stone-200/60 dark:border-stone-800/60">
+            <span className="text-[10px] text-stone-400 font-semibold uppercase">Contact</span>
+            <div className="font-bold text-stone-800 dark:text-stone-100 mt-0.5">{currentFarm.phone}</div>
+          </div>
+          <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-850/60 border border-stone-200/60 dark:border-stone-800/60">
+            <span className="text-[10px] text-stone-400 font-semibold uppercase">Sensor Nodes</span>
+            <div className="font-bold text-stone-800 dark:text-stone-100 mt-0.5">{currentFarm.plots.length} Deployed</div>
+          </div>
+          <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-850/60 border border-stone-200/60 dark:border-stone-800/60">
+            <span className="text-[10px] text-stone-400 font-semibold uppercase">Telemetry Frequency</span>
+            <div className="font-bold text-emerald-600 mt-0.5">2-Min Sync Interval</div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Field Plots Grid */}
+      <div>
+        <div className="flex items-center justify-between pb-3">
+          <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[#0fa958]" />
+            <span>Field Plots ({currentFarm.plots.length})</span>
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {currentFarm.plots.map((plot) => (
+            <Card key={plot.id} className="p-4 sm:p-5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                      {plot.name}
+                    </h4>
+                    <p className="text-[11px] text-stone-400 font-medium">
+                      {plot.sizeAcres} Acres • {plot.cropStage}
+                    </p>
+                  </div>
+                  <StatusBadge
+                    status={plot.healthScore >= 80 ? 'Healthy' : 'Attention'}
+                    variant={plot.healthScore >= 80 ? 'healthy' : 'attention'}
+                    size="xs"
+                    dot={true}
+                  />
+                </div>
+
+                <div className="space-y-1.5 text-xs text-stone-600 dark:text-stone-300">
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Crop:</span>
+                    <strong>{plot.cropName}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Variety:</span>
+                    <span>{plot.cropVariety}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Soil Type:</span>
+                    <span>{plot.soilType}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Irrigation:</span>
+                    <span className="text-sky-600 font-semibold">{plot.irrigationType}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Node ID:</span>
+                    <span className="font-mono text-stone-500">{plot.sensorNodeId}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-stone-100 dark:border-stone-800 mt-3 flex items-center justify-between text-[11px]">
+                <span className="text-stone-400">Health Index: <strong className="text-emerald-600">{plot.healthScore}%</strong></span>
+                <span className="text-stone-400">Sown: {plot.sowingDate}</span>
+              </div>
+            </Card>
           ))}
         </div>
       </div>
@@ -381,101 +285,119 @@ export const FarmInformationView: React.FC<FarmInformationViewProps> = ({
       <Modal
         isOpen={isAddPlotModalOpen}
         onClose={() => setIsAddPlotModalOpen(false)}
-        title={lang === 'hi' ? 'नया भूखंड (Plot) जोड़ें' : 'Register Sub-Plot to Farm'}
-        subtitle={`Assign crops, soil type, and node configuration for ${farm.name}`}
+        title="Add Field Plot"
+        subtitle="Configure crop parameters and soil zone"
       >
-        <form onSubmit={handleAddPlotSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleAddPlotSubmit} className="space-y-3.5 text-xs">
           <div>
-            <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-              Plot Identification Name
-            </label>
+            <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">Plot Name</label>
             <input
               type="text"
               required
+              placeholder="e.g. East Terrace Block 4"
               value={plotName}
-              onChange={e => setPlotName(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-              placeholder="e.g. East Terrace Block #4"
+              onChange={(e) => setPlotName(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                Crop & Variety
-              </label>
+              <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">Size (Acres)</label>
+              <input
+                type="number"
+                step="0.1"
+                required
+                value={plotAcres}
+                onChange={(e) => setPlotAcres(Number(e.target.value))}
+                className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+              />
+            </div>
+            <div>
+              <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">Crop</label>
               <input
                 type="text"
                 required
                 value={cropName}
-                onChange={e => setCropName(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-              />
-            </div>
-            <div>
-              <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                Area in Acres
-              </label>
-              <input
-                type="number"
-                step="0.5"
-                required
-                value={plotAcres}
-                onChange={e => setPlotAcres(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                onChange={(e) => setCropName(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                Crop Phenological Stage
-              </label>
-              <select
-                value={cropStage}
-                onChange={e => setCropStage(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-              >
-                <option value="Germination">Germination</option>
-                <option value="Vegetative">Vegetative</option>
-                <option value="Tillering">Tillering</option>
-                <option value="Flowering">Flowering</option>
-                <option value="Grain Filling">Grain Filling</option>
-                <option value="Maturity">Maturity</option>
-                <option value="Harvest">Harvest</option>
-              </select>
-            </div>
-            <div>
-              <label className="font-bold text-stone-700 dark:text-stone-300 block mb-1">
-                Irrigation System
-              </label>
-              <select
-                value={irrigationType}
-                onChange={e => setIrrigationType(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-              >
-                <option value="Drip">Drip Irrigation</option>
-                <option value="Sprinkler">Sprinkler System</option>
-                <option value="Flood / Furrow">Flood / Furrow</option>
-                <option value="Canal">Canal Feeder</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-stone-200 dark:border-stone-800 flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
             <button
               type="button"
               onClick={() => setIsAddPlotModalOpen(false)}
-              className="px-4 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300"
+              className="px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold"
+              className="px-4 py-2 rounded-xl bg-[#0fa958] hover:bg-[#13b963] text-white font-bold cursor-pointer shadow-xs"
             >
-              Add Plot
+              Save Plot
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Farm Modal */}
+      <Modal
+        isOpen={isConnectFarmModalOpen}
+        onClose={() => setIsConnectFarmModalOpen(false)}
+        title="Edit Farm Profile"
+        subtitle="Update farm registration details"
+      >
+        <form onSubmit={handleConnectSubmit} className="space-y-3.5 text-xs">
+          <div>
+            <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">Farm Name</label>
+            <input
+              type="text"
+              required
+              value={farmName}
+              onChange={(e) => setFarmName(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">Farmer Name</label>
+              <input
+                type="text"
+                required
+                value={farmerName}
+                onChange={(e) => setFarmerName(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+              />
+            </div>
+            <div>
+              <label className="block text-stone-700 dark:text-stone-300 font-semibold mb-1">Phone</label>
+              <input
+                type="text"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
+            <button
+              type="button"
+              onClick={() => setIsConnectFarmModalOpen(false)}
+              className="px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-xl bg-[#0fa958] hover:bg-[#13b963] text-white font-bold cursor-pointer shadow-xs"
+            >
+              Save Changes
             </button>
           </div>
         </form>

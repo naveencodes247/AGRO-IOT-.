@@ -533,10 +533,10 @@ export class FarmBackendEngine {
 
     const moistureDelta = Number((newMoisture - s.soil.moisture).toFixed(2));
     const moistureTrend = moistureDelta > 0.05 ? 'rising' : moistureDelta < -0.05 ? 'falling' : 'stable';
-    const tempDelta = Number((newTemp - s.environment.temperature).toFixed(1));
-    const tempTrend = tempDelta > 0.1 ? 'rising' : tempDelta < -0.1 ? 'falling' : 'stable';
-    const humDelta = Number((newHum - s.environment.humidity).toFixed(1));
-    const humTrend = humDelta > 0.5 ? 'rising' : humDelta < -0.5 ? 'falling' : 'stable';
+    const temperatureDelta = Number((newTemp - s.environment.temperature).toFixed(1));
+    const temperatureTrend = temperatureDelta > 0.1 ? 'rising' : temperatureDelta < -0.1 ? 'falling' : 'stable';
+    const humidityDelta = Number((newHum - s.environment.humidity).toFixed(1));
+    const humidityTrend = humidityDelta > 0.5 ? 'rising' : humidityDelta < -0.5 ? 'falling' : 'stable';
 
     // Correlated solar & battery
     const solarWatts = Math.round(Math.max(0, Math.min(980, 720 + (Math.random() - 0.5) * 40)));

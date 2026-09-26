@@ -99,7 +99,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 onClick={() => onNavigate('live-monitoring')}
-                className="px-6 py-3.5 rounded-xl bg-[#133e24] hover:bg-[#1a5230] dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                className="px-6 py-3.5 rounded-xl bg-[#0fa958] hover:bg-[#13b963] active:bg-[#0d8f4a] text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer active:scale-95"
               >
                 <span>{lang === 'hi' ? 'खेत की लाइव स्थिति देखें' : 'Explore Live Farm'}</span>
                 <ArrowRight className="w-4 h-4" />

@@ -1,15 +1,19 @@
 import React from 'react';
 
+import { ASSETS } from '../../assets/assetMap';
+
 interface AgroIotLogoProps {
   className?: string;
   showText?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  useImage?: boolean;
 }
 
 export const AgroIotLogo: React.FC<AgroIotLogoProps> = ({
   className = '',
   showText = true,
   size = 'md',
+  useImage = true,
 }) => {
   const sizeMap = {
     sm: { icon: 'w-7 h-7', text: 'text-base', sub: 'text-[8px]' },
@@ -22,7 +26,14 @@ export const AgroIotLogo: React.FC<AgroIotLogoProps> = ({
 
   return (
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
-      {/* Official Circular AGRO-IoT Emblem SVG */}
+      {/* Official Circular AGRO-IoT Logo Image (User's provided asset) */}
+      {useImage ? (
+        <img
+          src={ASSETS.officialLogo}
+          alt="AGRO-IoT Official Logo"
+          className={`${currentSize.icon} object-contain rounded-full shadow-xs flex-shrink-0 bg-white ring-1 ring-emerald-500/30`}
+        />
+      ) : (
       <svg
         viewBox="0 0 200 200"
         className={`${currentSize.icon} drop-shadow-2xs flex-shrink-0`}
@@ -153,6 +164,7 @@ export const AgroIotLogo: React.FC<AgroIotLogoProps> = ({
           strokeWidth="2"
         />
       </svg>
+      )}
 
       {/* Styled Official Text "AGRO-IoT" */}
       {showText && (

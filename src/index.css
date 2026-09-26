@@ -5,11 +5,13 @@
 @theme {
   --font-serif: 'Newsreader', Georgia, Cambria, serif;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --color-brand-forest: #143e24;
-  --color-brand-emerald: #15803d;
+  --font-script: 'Caveat', cursive, sans-serif;
+  --color-brand-forest: #092317;
+  --color-brand-sidebar: #092317;
+  --color-brand-emerald: #0fa958;
   --color-brand-leaf: #16a34a;
-  --color-brand-sand: #fbf9f5;
-  --color-brand-cream: #f4f1ea;
+  --color-brand-sand: #f8faf9;
+  --color-brand-cream: #f4f6f4;
 }
 
 @layer base {

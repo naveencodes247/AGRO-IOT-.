@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  BookOpen, 
+  Globe, 
   Search, 
   MapPin, 
   Sprout, 
@@ -11,11 +11,15 @@ import {
   Filter, 
   X, 
   ExternalLink,
-  Info
+  Info,
+  ArrowRight
 } from 'lucide-react';
-import { AgriCrop, AgriDisease, AgriPest, IndianStateAgriProfile, Language } from '../types';
-import { agriIntelligenceService, INDIAN_STATES_DATA, AGRI_CROPS, AGRI_PESTS, AGRI_DISEASES } from '../services/agriIntelligenceService';
+import { AgriCrop, AgriDisease, AgriPest, Language } from '../types';
+import { agriIntelligenceService } from '../services/agriIntelligenceService';
 import { IndiaMap } from '../components/common/IndiaMap';
+import { PageHeader } from '../components/common/PageHeader';
+import { Card, CardHeader } from '../components/common/Card';
+import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
 
 interface AgricultureIntelligenceViewProps {
@@ -40,428 +44,318 @@ export const AgricultureIntelligenceView: React.FC<AgricultureIntelligenceViewPr
   const categories = ['All', 'Cereals', 'Pulses', 'Oilseeds', 'Commercial', 'Vegetables'];
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200/80 dark:border-stone-800/80">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-              {lang === 'hi' ? 'भारतीय राष्ट्रीय कृषि ज्ञानकोश' : 'National Agriculture Intelligence System'}
-            </h2>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-              ICAR Grounded
-            </span>
-          </div>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            {lang === 'hi'
-              ? '28 राज्य, 8 केंद्र शासित प्रदेश, फसल गाइड, कीट एवं रोग प्रबंधन संदर्भ'
-              : 'Verified agronomic repository for Indian agro-climatic zones, cropping systems, and IPM'}
-          </p>
-        </div>
-
-        {/* Sub-navigation tabs (Map, Crops, Pests, Diseases) */}
-        <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800 p-1 rounded-lg text-xs font-semibold">
-          <button
-            onClick={() => setActiveTab('map')}
-            className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-              activeTab === 'map'
-                ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-xs font-bold'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
-            }`}
-          >
-            {lang === 'hi' ? 'भारत मानचित्र' : 'India Agri Map'}
-          </button>
-          <button
-            onClick={() => setActiveTab('crops')}
-            className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-              activeTab === 'crops'
-                ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-xs font-bold'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
-            }`}
-          >
-            {lang === 'hi' ? 'फसलें' : 'Crops Directory'}
-          </button>
-          <button
-            onClick={() => setActiveTab('pests')}
-            className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-              activeTab === 'pests'
-                ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-xs font-bold'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
-            }`}
-          >
-            {lang === 'hi' ? 'कीट' : 'Pests'}
-          </button>
-          <button
-            onClick={() => setActiveTab('diseases')}
-            className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-              activeTab === 'diseases'
-                ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-xs font-bold'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
-            }`}
-          >
-            {lang === 'hi' ? 'रोग' : 'Diseases'}
-          </button>
-        </div>
-      </div>
-
-      {/* Global Agriculture Search Bar */}
-      <div className="bg-white/90 dark:bg-stone-900/90 backdrop-blur-md rounded-xl border border-stone-200/80 dark:border-stone-800/80 p-4 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={lang === 'hi' ? 'फसल, कीट, रोग, राज्य या मिट्टी का नाम खोजें...' : 'Search by Crop, Pest, Disease, State, Soil, or Season...'}
-              className="w-full pl-9 pr-8 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-hidden"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 cursor-pointer"
+    <div className="space-y-5 select-none font-sans pb-10">
+      {/* Unified Page Header */}
+      <PageHeader
+        title={lang === 'hi' ? 'कृषि इंटेलिजेंस' : 'Agriculture Intelligence'}
+        subtitle={lang === 'hi'
+          ? '28 राज्य, 8 केंद्र शासित प्रदेश, फसल गाइड, कीट एवं रोग प्रबंधन संदर्भ'
+          : 'Explore crop, soil, pest and disease information across Indian agro-climatic zones'}
+        actions={
+          <div className="flex items-center gap-1 p-1 bg-stone-100 dark:bg-stone-850 rounded-xl text-xs font-semibold">
+            {[
+              { id: 'map', label: lang === 'hi' ? 'भारत नक्शा' : 'India Agri Map' },
+              { id: 'crops', label: lang === 'hi' ? 'फसलें' : 'Crops' },
+              { id: 'pests', label: lang === 'hi' ? 'कीट' : 'Pests' },
+              { id: 'diseases', label: lang === 'hi' ? 'रोग' : 'Diseases' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-white dark:bg-stone-750 text-stone-900 dark:text-stone-100 font-bold shadow-xs'
+                    : 'text-stone-500 hover:text-stone-900'
+                }`}
               >
-                <X className="w-4 h-4" />
+                {tab.label}
               </button>
-            )}
+            ))}
           </div>
+        }
+      />
 
-          {activeTab === 'crops' && (
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0">
-              <span className="text-xs text-stone-500 whitespace-nowrap mr-1">Category:</span>
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`text-xs px-2.5 py-1 rounded-md border transition-colors cursor-pointer whitespace-nowrap ${
-                    selectedCategory === cat
-                      ? 'bg-emerald-700 text-white border-emerald-700 font-bold'
-                      : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search input */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={lang === 'hi' ? 'फसल, कीट या रोग खोजें...' : 'Search crops, pests, diseases or state...'}
+            className="w-full pl-9 pr-8 py-2 bg-white dark:bg-[#141b16] border border-stone-200 dark:border-stone-800 rounded-xl text-xs sm:text-sm text-stone-800 dark:text-stone-200 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           )}
         </div>
+
+        {/* Category Filter Pills (for crops tab) */}
+        {activeTab === 'crops' && (
+          <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`text-xs px-3 py-1 rounded-full font-semibold transition-all cursor-pointer ${
+                  selectedCategory === cat
+                    ? 'bg-[#0fa958] text-white shadow-2xs'
+                    : 'bg-white dark:bg-[#141b16] border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-50'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Main Content Areas */}
-
-      {/* Tab 1: Interactive India Map */}
+      {/* Tab Content 1: India Agricultural Map */}
       {activeTab === 'map' && (
-        <div className="space-y-4">
+        <Card className="p-4 sm:p-5">
           <IndiaMap
             selectedStateId={selectedStateId}
-            onSelectState={(state) => setSelectedStateId(state.id)}
+            onSelectState={setSelectedStateId}
             lang={lang}
           />
-        </div>
+        </Card>
       )}
 
-      {/* Tab 2: Crops Directory */}
+      {/* Tab Content 2: Crops Directory */}
       {activeTab === 'crops' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {searchResults.crops.map((crop) => (
-            <div
+            <Card
               key={crop.id}
               onClick={() => setSelectedCrop(crop)}
-              className="p-5 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs hover:border-emerald-500/50 transition-all cursor-pointer space-y-3 group"
+              className="p-4 sm:p-5 flex flex-col justify-between"
             >
-              <div className="flex items-start justify-between gap-2 pb-2 border-b border-stone-100 dark:border-stone-800">
-                <div>
-                  <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
-                    {crop.name}
-                  </h3>
-                  <span className="text-xs text-stone-500 dark:text-stone-400">
-                    {crop.hindiName}
+              <div>
+                <div className="flex items-start justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                      {crop.name}
+                    </h3>
+                    <p className="text-[11px] text-stone-400 italic">
+                      {crop.scientificName}
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                    {crop.category}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
-                  {crop.category}
+
+                <div className="space-y-1.5 text-xs text-stone-600 dark:text-stone-300">
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Season:</span>
+                    <strong className="text-stone-800 dark:text-stone-200">{crop.season}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Duration:</span>
+                    <span>{crop.durationDays} Days</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Water Need:</span>
+                    <span className="text-sky-600 font-semibold">{crop.waterRequirementMm} mm</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Ideal Temp:</span>
+                    <span>{crop.idealTempC[0]} - {crop.idealTempC[1]}°C</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-stone-100 dark:border-stone-800 mt-3 flex items-center justify-between text-[11px]">
+                <span className="text-stone-400">Major: {crop.majorStates.slice(0, 2).join(', ')}</span>
+                <span className="text-emerald-600 font-bold flex items-center gap-0.5">
+                  <span>View Guide</span>
+                  <ArrowRight className="w-3 h-3" />
                 </span>
               </div>
-
-              <div className="space-y-1.5 text-xs text-stone-600 dark:text-stone-400">
-                <div>
-                  <strong className="text-stone-800 dark:text-stone-200">Sowing Season: </strong>
-                  {crop.sowingSeason}
-                </div>
-                <div>
-                  <strong className="text-stone-800 dark:text-stone-200">Ideal Temp: </strong>
-                  {crop.idealTemperature}
-                </div>
-                <div>
-                  <strong className="text-stone-800 dark:text-stone-200">Growth Duration: </strong>
-                  {crop.growthDurationDays}
-                </div>
-                <div className="truncate">
-                  <strong className="text-stone-800 dark:text-stone-200">Key Regions: </strong>
-                  {crop.growingRegions.join(', ')}
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
-                <span>View Full Agronomy Guide</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
 
-      {/* Tab 3: Pests Directory */}
+      {/* Tab Content 3: Pests Directory */}
       {activeTab === 'pests' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {searchResults.pests.map((pest) => (
-            <div
+            <Card
               key={pest.id}
               onClick={() => setSelectedPest(pest)}
-              className="p-5 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs hover:border-amber-500/50 transition-all cursor-pointer space-y-3"
+              className="p-4 sm:p-5 flex flex-col justify-between"
             >
-              <div className="flex items-start justify-between gap-2 pb-2 border-b border-stone-100 dark:border-stone-800">
-                <div>
-                  <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                    {pest.name}
-                  </h3>
-                  <div className="text-xs text-stone-500 italic">
-                    {pest.scientificName} · {pest.hindiName}
+              <div>
+                <div className="flex items-start justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                      {pest.name}
+                    </h3>
+                    <p className="text-[11px] text-stone-400 italic">
+                      {pest.scientificName}
+                    </p>
+                  </div>
+                  <StatusBadge status={pest.severity.toUpperCase()} variant={pest.severity === 'critical' ? 'critical' : 'attention'} size="xs" />
+                </div>
+
+                <div className="space-y-1.5 text-xs text-stone-600 dark:text-stone-300">
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Affected Crops:</span>
+                    <strong className="text-stone-800 dark:text-stone-200">{pest.affectedCrops.join(', ')}</strong>
+                  </div>
+                  <div className="text-[11px] text-stone-500 line-clamp-2 mt-1">
+                    {pest.symptoms[0]}
                   </div>
                 </div>
-                <div className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600">
-                  <Bug className="w-4 h-4" />
-                </div>
               </div>
 
-              <div className="space-y-1.5 text-xs text-stone-600 dark:text-stone-400">
-                <div>
-                  <strong className="text-stone-800 dark:text-stone-200">Host Crops: </strong>
-                  {pest.affectedCrops.join(', ')}
-                </div>
-                <div>
-                  <strong className="text-stone-800 dark:text-stone-200">Favorable Climate: </strong>
-                  {pest.favorableConditions}
-                </div>
-                <div className="line-clamp-2">
-                  <strong className="text-stone-800 dark:text-stone-200">Primary Damage: </strong>
-                  {pest.symptoms[0]}
-                </div>
+              <div className="pt-3 border-t border-stone-100 dark:border-stone-800 mt-3 flex items-center justify-between text-[11px]">
+                <span className="text-emerald-600 font-bold">IPM Strategy</span>
+                <span className="text-emerald-600 font-bold flex items-center gap-0.5">
+                  <span>View Details</span>
+                  <ArrowRight className="w-3 h-3" />
+                </span>
               </div>
-
-              <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-stone-500">
-                <span className="text-[11px] truncate">Ref: {pest.referenceSource}</span>
-                <span className="text-emerald-700 dark:text-emerald-400 font-bold">IPM Strategy →</span>
-              </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
 
-      {/* Tab 4: Diseases Directory */}
+      {/* Tab Content 4: Diseases Directory */}
       {activeTab === 'diseases' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {searchResults.diseases.map((dis) => (
-            <div
+            <Card
               key={dis.id}
               onClick={() => setSelectedDisease(dis)}
-              className="p-5 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs hover:border-rose-500/50 transition-all cursor-pointer space-y-3"
+              className="p-4 sm:p-5 flex flex-col justify-between"
             >
-              <div className="flex items-start justify-between gap-2 pb-2 border-b border-stone-100 dark:border-stone-800">
-                <div>
-                  <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                    {dis.name}
-                  </h3>
-                  <div className="text-xs text-stone-500 italic">
-                    {dis.causalOrganism} · {dis.hindiName}
+              <div>
+                <div className="flex items-start justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                      {dis.name}
+                    </h3>
+                    <p className="text-[11px] text-stone-400 italic">
+                      {dis.causalOrganism}
+                    </p>
+                  </div>
+                  <StatusBadge status={dis.severity.toUpperCase()} variant={dis.severity === 'critical' ? 'critical' : 'attention'} size="xs" />
+                </div>
+
+                <div className="space-y-1.5 text-xs text-stone-600 dark:text-stone-300">
+                  <div className="flex justify-between">
+                    <span className="text-stone-400">Pathogen Type:</span>
+                    <strong className="capitalize text-stone-800 dark:text-stone-200">{dis.type}</strong>
+                  </div>
+                  <div className="text-[11px] text-stone-500 line-clamp-2 mt-1">
+                    {dis.symptoms[0]}
                   </div>
                 </div>
-                <div className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600">
-                  <ShieldAlert className="w-4 h-4" />
-                </div>
               </div>
 
-              <div className="space-y-1.5 text-xs text-stone-600 dark:text-stone-400">
-                <div>
-                  <strong className="text-stone-800 dark:text-stone-200">Susceptible Crops: </strong>
-                  {dis.affectedCrops.join(', ')}
-                </div>
-                <div>
-                  <strong className="text-stone-800 dark:text-stone-200">Weather Triggers: </strong>
-                  {dis.favorableConditions}
-                </div>
-                <div className="line-clamp-2">
-                  <strong className="text-stone-800 dark:text-stone-200">Pathology: </strong>
-                  {dis.symptoms[0]}
-                </div>
+              <div className="pt-3 border-t border-stone-100 dark:border-stone-800 mt-3 flex items-center justify-between text-[11px]">
+                <span className="text-emerald-600 font-bold">ICAR Reference</span>
+                <span className="text-emerald-600 font-bold flex items-center gap-0.5">
+                  <span>Treatment</span>
+                  <ArrowRight className="w-3 h-3" />
+                </span>
               </div>
-
-              <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-stone-500">
-                <span className="text-[11px] truncate">Ref: {dis.referenceSource}</span>
-                <span className="text-emerald-700 dark:text-emerald-400 font-bold">Fungicide & Cultural Care →</span>
-              </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
 
-      {/* Crop Detail Modal */}
+      {/* Detail Modal for Crop */}
       {selectedCrop && (
         <Modal
-          isOpen={true}
+          isOpen={Boolean(selectedCrop)}
           onClose={() => setSelectedCrop(null)}
-          title={`${selectedCrop.name} (${selectedCrop.hindiName})`}
-          subtitle={`Category: ${selectedCrop.category} · Season: ${selectedCrop.sowingSeason}`}
-          maxWidth="max-w-2xl"
+          title={selectedCrop.name}
+          subtitle={selectedCrop.scientificName}
         >
-          <div className="space-y-4 text-xs">
-            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700">
-              <div>
-                <span className="text-stone-400 font-bold uppercase text-[10px] block">Optimal Climate</span>
-                <p className="text-stone-800 dark:text-stone-200 mt-0.5">{selectedCrop.climate}</p>
-              </div>
-              <div>
-                <span className="text-stone-400 font-bold uppercase text-[10px] block">Soil Requirement</span>
-                <p className="text-stone-800 dark:text-stone-200 mt-0.5">{selectedCrop.soil}</p>
-              </div>
+          <div className="space-y-3 text-xs">
+            <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-stone-50 dark:bg-stone-850">
+              <div>Season: <strong>{selectedCrop.season}</strong></div>
+              <div>Category: <strong>{selectedCrop.category}</strong></div>
+              <div>Duration: <strong>{selectedCrop.durationDays} Days</strong></div>
+              <div>Water Need: <strong>{selectedCrop.waterRequirementMm} mm</strong></div>
             </div>
-
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="p-3 rounded-lg border border-stone-200 dark:border-stone-700">
-                <span className="text-stone-400 block text-[10px] uppercase font-bold">Ideal Temperature</span>
-                <span className="font-bold text-stone-900 dark:text-stone-100 text-sm mt-1 block">{selectedCrop.idealTemperature}</span>
-              </div>
-              <div className="p-3 rounded-lg border border-stone-200 dark:border-stone-700">
-                <span className="text-stone-400 block text-[10px] uppercase font-bold">Water Requirement</span>
-                <span className="font-bold text-stone-900 dark:text-stone-100 text-sm mt-1 block">{selectedCrop.waterRequirement}</span>
-              </div>
-              <div className="p-3 rounded-lg border border-stone-200 dark:border-stone-700">
-                <span className="text-stone-400 block text-[10px] uppercase font-bold">Growth Duration</span>
-                <span className="font-bold text-stone-900 dark:text-stone-100 text-sm mt-1 block">{selectedCrop.growthDurationDays}</span>
-              </div>
+            <div>
+              <span className="font-bold text-stone-800 dark:text-stone-200">Recommended Soil:</span>
+              <p className="text-stone-500 mt-0.5">{selectedCrop.soilType}</p>
             </div>
-
-            {/* Nutrients */}
-            <div className="p-3.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-1">
-              <span className="text-emerald-900 dark:text-emerald-300 font-bold uppercase text-[10px]">
-                Recommended N-P-K & Manure Baseline
-              </span>
-              <div className="grid grid-cols-2 gap-2 text-stone-700 dark:text-stone-300 pt-1">
-                <div>Nitrogen (N): <strong>{selectedCrop.nutrientRequirements.nitrogen}</strong></div>
-                <div>Phosphorus (P): <strong>{selectedCrop.nutrientRequirements.phosphorus}</strong></div>
-                <div>Potassium (K): <strong>{selectedCrop.nutrientRequirements.potassium}</strong></div>
-                <div>Organic Matter: <strong>{selectedCrop.nutrientRequirements.organicMatter}</strong></div>
-              </div>
-            </div>
-
-            {/* Harvest & Storage */}
-            <div className="space-y-2">
-              <div>
-                <strong className="text-stone-900 dark:text-stone-100">Harvesting Guidelines: </strong>
-                <span className="text-stone-600 dark:text-stone-400">{selectedCrop.harvestAdvice}</span>
-              </div>
-              <div>
-                <strong className="text-stone-900 dark:text-stone-100">Post-Harvest Storage: </strong>
-                <span className="text-stone-600 dark:text-stone-400">{selectedCrop.storageRecommendation}</span>
-              </div>
+            <div>
+              <span className="font-bold text-stone-800 dark:text-stone-200">Major Producing States:</span>
+              <p className="text-stone-500 mt-0.5">{selectedCrop.majorStates.join(', ')}</p>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* Pest Detail Modal */}
+      {/* Detail Modal for Pest */}
       {selectedPest && (
         <Modal
-          isOpen={true}
+          isOpen={Boolean(selectedPest)}
           onClose={() => setSelectedPest(null)}
-          title={`${selectedPest.name} (${selectedPest.hindiName})`}
-          subtitle={`Scientific: ${selectedPest.scientificName}`}
-          maxWidth="max-w-2xl"
+          title={selectedPest.name}
+          subtitle={selectedPest.scientificName}
         >
-          <div className="space-y-4 text-xs">
-            <div className="p-3 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700">
-              <span className="text-stone-400 font-bold uppercase text-[10px] block">Field Identification</span>
-              <p className="text-stone-800 dark:text-stone-200 mt-1">{selectedPest.identification}</p>
+          <div className="space-y-3 text-xs">
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300">
+              Severity: <strong>{selectedPest.severity.toUpperCase()}</strong> • Host Crops: {selectedPest.affectedCrops.join(', ')}
             </div>
-
             <div>
-              <span className="text-stone-900 dark:text-stone-100 font-bold block mb-1">Symptoms of Damage:</span>
-              <ul className="list-disc pl-5 space-y-1 text-stone-600 dark:text-stone-400">
-                {selectedPest.symptoms.map((s, idx) => (
-                  <li key={idx}>{s}</li>
-                ))}
+              <span className="font-bold text-stone-800 dark:text-stone-200">Symptoms:</span>
+              <ul className="list-disc pl-4 text-stone-500 mt-1 space-y-0.5">
+                {selectedPest.symptoms.map((s, i) => <li key={i}>{s}</li>)}
               </ul>
             </div>
-
-            {/* IPM Trio */}
-            <div className="space-y-2 pt-2 border-t border-stone-200 dark:border-stone-700">
-              <span className="font-bold text-emerald-800 dark:text-emerald-400 block uppercase text-[10px]">
-                Integrated Pest Management (IPM) Schedule
-              </span>
-              <div className="space-y-2">
-                <div className="p-2.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
-                  <strong>Cultural / Mechanical: </strong>{selectedPest.generalManagement.cultural}
-                </div>
-                <div className="p-2.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800">
-                  <strong>Biological Control: </strong>{selectedPest.generalManagement.biological}
-                </div>
-                <div className="p-2.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800">
-                  <strong>Chemical Spray (At Economic Threshold): </strong>{selectedPest.generalManagement.chemical}
-                </div>
-              </div>
+            <div>
+              <span className="font-bold text-emerald-700 dark:text-emerald-400">Biological & Organic Control:</span>
+              <p className="text-stone-600 dark:text-stone-300 mt-0.5">{selectedPest.organicControl}</p>
             </div>
-
-            <div className="text-[11px] text-stone-400 italic pt-2">
-              Reference Authority: {selectedPest.referenceSource}
+            <div>
+              <span className="font-bold text-stone-800 dark:text-stone-200">Chemical Recommendation (CIBRC):</span>
+              <p className="text-stone-600 dark:text-stone-300 mt-0.5">{selectedPest.chemicalControl}</p>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* Disease Detail Modal */}
+      {/* Detail Modal for Disease */}
       {selectedDisease && (
         <Modal
-          isOpen={true}
+          isOpen={Boolean(selectedDisease)}
           onClose={() => setSelectedDisease(null)}
-          title={`${selectedDisease.name} (${selectedDisease.hindiName})`}
-          subtitle={`Causal Organism: ${selectedDisease.causalOrganism}`}
-          maxWidth="max-w-2xl"
+          title={selectedDisease.name}
+          subtitle={selectedDisease.causalOrganism}
         >
-          <div className="space-y-4 text-xs">
+          <div className="space-y-3 text-xs">
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300">
+              Type: <strong className="capitalize">{selectedDisease.type}</strong> • Host Crops: {selectedDisease.affectedCrops.join(', ')}
+            </div>
             <div>
-              <span className="text-stone-900 dark:text-stone-100 font-bold block mb-1">Pathological Symptoms:</span>
-              <ul className="list-disc pl-5 space-y-1 text-stone-600 dark:text-stone-400">
-                {selectedDisease.symptoms.map((s, idx) => (
-                  <li key={idx}>{s}</li>
-                ))}
+              <span className="font-bold text-stone-800 dark:text-stone-200">Symptoms:</span>
+              <ul className="list-disc pl-4 text-stone-500 mt-1 space-y-0.5">
+                {selectedDisease.symptoms.map((s, i) => <li key={i}>{s}</li>)}
               </ul>
             </div>
-
-            <div className="p-3 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700">
-              <span className="text-stone-400 font-bold uppercase text-[10px] block">Favorable Weather Conditions</span>
-              <p className="text-stone-800 dark:text-stone-200 mt-1">{selectedDisease.favorableConditions}</p>
+            <div>
+              <span className="font-bold text-emerald-700 dark:text-emerald-400">Organic & Cultural Management:</span>
+              <p className="text-stone-600 dark:text-stone-300 mt-0.5">{selectedDisease.organicControl}</p>
             </div>
-
-            {/* Disease Management */}
-            <div className="space-y-2 pt-2 border-t border-stone-200 dark:border-stone-700">
-              <span className="font-bold text-emerald-800 dark:text-emerald-400 block uppercase text-[10px]">
-                Recommended Disease Management
-              </span>
-              <div className="space-y-2">
-                <div className="p-2.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
-                  <strong>Preventive: </strong>{selectedDisease.generalManagement.preventive}
-                </div>
-                <div className="p-2.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800">
-                  <strong>Cultural Practices: </strong>{selectedDisease.generalManagement.cultural}
-                </div>
-                <div className="p-2.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 border border-rose-200 dark:border-rose-800">
-                  <strong>Fungicidal Spray: </strong>{selectedDisease.generalManagement.fungicidal}
-                </div>
-              </div>
-            </div>
-
-            <div className="text-[11px] text-stone-400 italic pt-2">
-              Reference Authority: {selectedDisease.referenceSource}
+            <div>
+              <span className="font-bold text-stone-800 dark:text-stone-200">Chemical Fungicide / Bactericide:</span>
+              <p className="text-stone-600 dark:text-stone-300 mt-0.5">{selectedDisease.chemicalControl}</p>
             </div>
           </div>
         </Modal>

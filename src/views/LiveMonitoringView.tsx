@@ -8,18 +8,19 @@ import {
   Radio, 
   RefreshCw, 
   ShieldCheck, 
-  AlertTriangle, 
-  Power, 
-  BatteryMedium, 
-  Cpu, 
   CheckCircle2, 
-  Info,
-  Clock
+  Cpu, 
+  Layers,
+  ArrowRight,
+  TrendingDown,
+  TrendingUp,
+  Minus
 } from 'lucide-react';
 import { Farm, Language, SensorReading } from '../types';
-import { DemoBadge } from '../components/common/DemoBadge';
 import { EmptyState } from '../components/common/EmptyState';
-import { FieldConditionHub } from '../components/common/FieldConditionHub';
+import { PageHeader } from '../components/common/PageHeader';
+import { Card, CardHeader } from '../components/common/Card';
+import { StatusBadge } from '../components/common/StatusBadge';
 
 interface LiveMonitoringViewProps {
   farm: Farm | null;
@@ -79,289 +80,277 @@ export const LiveMonitoringView: React.FC<LiveMonitoringViewProps> = ({
   const soilTemp = readings.find(r => r.sensorType === 'soil_temp');
   const solar = readings.find(r => r.sensorType === 'solar_radiation');
 
+  const currentMoistureVal = selectedDepth === '15' ? (moisture15?.value ?? 28.4) : (moisture30?.value ?? 34.2);
+
   return (
-    <div className="space-y-6">
-      {/* Highlighted Field Condition Hub */}
-      <FieldConditionHub
-        farm={farm}
-        readings={readings}
-        lang={lang}
-        isLiveMode={!isDemoMode}
+    <div className="space-y-5 select-none font-sans pb-10">
+      {/* Unified Page Header */}
+      <PageHeader
+        title={lang === 'hi' ? 'लाइव खेत निगरानी' : 'Live Monitoring'}
+        subtitle={lang === 'hi'
+          ? 'रीयल-टाइम सेंसर टेलीमेट्री, मृदा नमी प्रोफाइल और फील्ड उपकरण स्थिति'
+          : "Granular sensor telemetry, capacitive soil moisture depth profiles, and field actuator telemetry"}
+        actions={
+          <>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#141b16] text-xs font-semibold text-stone-600 dark:text-stone-300 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Gateway: <strong className="font-mono text-stone-800 dark:text-stone-200">{farm.gatewayId}</strong></span>
+            </div>
+
+            <button
+              onClick={handleRefresh}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white dark:bg-[#141b16] border border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-850 text-xs font-semibold text-stone-700 dark:text-stone-200 shadow-2xs cursor-pointer transition-all"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-[#0fa958] ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{lang === 'hi' ? 'ताज़ा करें' : 'Refresh Telemetry'}</span>
+            </button>
+
+            <button
+              onClick={onToggleDemoMode}
+              className="text-xs text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 underline px-2 py-1 cursor-pointer"
+            >
+              {isDemoMode ? 'Simulated' : 'Live Mode'}
+            </button>
+          </>
+        }
       />
 
-      {/* Top Telemetry Header & Status Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200/80 dark:border-stone-800/80">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-              {lang === 'hi' ? 'लाइव खेत निगरानी एवं टेलीमेट्री' : 'Live Farm Telemetry & Environmental Status'}
-            </h2>
-            <DemoBadge mode="demo" onToggleMode={onToggleDemoMode} />
-          </div>
-          <p className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-2">
-            <span>Gateway: <strong className="font-mono text-stone-700 dark:text-stone-300">{farm.gatewayId}</strong></span>
-            <span>•</span>
-            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              RF Signal 82 dBm
-            </span>
-            <span>•</span>
-            <span>Last Packet: Just now</span>
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleRefresh}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-50 text-stone-700 dark:text-stone-200 text-xs font-semibold transition-all cursor-pointer ${
-              isRefreshing ? 'opacity-70' : ''
-            }`}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-600' : ''}`} />
-            <span>{lang === 'hi' ? 'ताज़ा करें' : 'Refresh Telemetry'}</span>
-          </button>
-
-          <button
-            onClick={onToggleDemoMode}
-            className="text-xs text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 underline px-2 py-1 cursor-pointer"
-          >
-            {lang === 'hi' ? 'खाली स्थिति देखें' : 'Test Empty State'}
-          </button>
-        </div>
-      </div>
-
-      {/* Primary Soil Moisture Telemetry Block */}
-      <div className="bg-white/90 dark:bg-stone-900/90 backdrop-blur-md rounded-xl border border-stone-200/80 dark:border-stone-800/80 p-6 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
+      {/* Main Grid: Soil Moisture Profile + Microclimate */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Left Column (7 cols): Soil Moisture Depth Profile Card */}
+        <Card className="lg:col-span-7 p-4 sm:p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400">
-                <Droplets className="w-5 h-5" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100 dark:border-stone-800 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 flex items-center justify-center">
+                  <Droplets className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                    Root Zone Soil Moisture Profile
+                  </h3>
+                  <p className="text-[11px] text-stone-400">
+                    Multi-depth capacitive frequency domain reflectometry
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                  {lang === 'hi' ? 'मृदा नमी प्रोफ़ाइल (Soil Moisture Depth Analysis)' : 'Root Zone Soil Moisture Profile'}
-                </h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Capacitive frequency domain sensors in active wheat root zone
+
+              {/* Depth Selector Pill Toggle */}
+              <div className="flex items-center p-1 bg-stone-100 dark:bg-stone-850 rounded-xl text-xs font-semibold self-start sm:self-auto">
+                <button
+                  onClick={() => setSelectedDepth('15')}
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                    selectedDepth === '15'
+                      ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 font-bold shadow-xs'
+                      : 'text-stone-500 hover:text-stone-900'
+                  }`}
+                >
+                  15 cm Topsoil
+                </button>
+                <button
+                  onClick={() => setSelectedDepth('30')}
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                    selectedDepth === '30'
+                      ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 font-bold shadow-xs'
+                      : 'text-stone-500 hover:text-stone-900'
+                  }`}
+                >
+                  30 cm Deep Root
+                </button>
+              </div>
+            </div>
+
+            {/* Reading Gauge Area */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-2 items-center">
+              <div className="space-y-1">
+                <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
+                  Active Depth ({selectedDepth} cm)
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-4xl font-black text-sky-600 font-mono">
+                    {currentMoistureVal}%
+                  </span>
+                  <span className="text-xs text-stone-400 font-medium">VWC</span>
+                </div>
+                <StatusBadge status="Optimal" variant="healthy" size="xs" dot={true} />
+              </div>
+
+              {/* Threshold Gauge Bar */}
+              <div className="sm:col-span-2 space-y-2">
+                <div className="flex justify-between text-[11px] text-stone-500 font-medium">
+                  <span>Wilting Point (20%)</span>
+                  <span>Target Range (25 - 45%)</span>
+                  <span>Saturation (50%)</span>
+                </div>
+                <div className="w-full h-3 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden flex relative">
+                  <div className="w-1/4 h-full bg-amber-400/40 border-r border-white/20" />
+                  <div className="w-1/2 h-full bg-[#0fa958]/30 border-r border-white/20" />
+                  <div className="w-1/4 h-full bg-sky-400/30" />
+                  {/* Position pointer marker */}
+                  <div
+                    className="absolute top-0 bottom-0 w-2 bg-sky-600 rounded-full shadow-sm -ml-1 transition-all duration-300"
+                    style={{ left: `${Math.min(100, Math.max(0, (currentMoistureVal / 50) * 100))}%` }}
+                  />
+                </div>
+                <p className="text-[11px] text-stone-400">
+                  {selectedDepth === '15' 
+                    ? 'Topsoil moisture is stable. Drip pulse not required for the next 4 hours.'
+                    : 'Subsurface root zone water buffer adequate for active vegetative transpiration.'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Depth Toggle */}
-          <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800 p-1 rounded-lg text-xs font-semibold">
-            <button
-              onClick={() => setSelectedDepth('15')}
-              className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
-                selectedDepth === '15'
-                  ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
-              }`}
-            >
-              15 cm (Topsoil)
-            </button>
-            <button
-              onClick={() => setSelectedDepth('30')}
-              className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
-                selectedDepth === '30'
-                  ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-xs'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
-              }`}
-            >
-              30 cm (Root Reservoir)
-            </button>
+          <div className="pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-[11px] text-stone-500">
+            <span>Sensor Node: <strong className="font-mono text-stone-700 dark:text-stone-300">NODE-ESP32-W1</strong></span>
+            <span>Transmission: LoRa 865 MHz (SF7)</span>
           </div>
-        </div>
+        </Card>
 
-        {/* Moisture Reading Gauges & Status */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-5 items-center">
-          {/* Main Visual Percentage */}
-          <div className="space-y-2">
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-              Current Moisture Reading ({selectedDepth === '15' ? '15 cm Depth' : '30 cm Depth'})
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-extrabold text-blue-700 dark:text-blue-400 font-mono">
-                {selectedDepth === '15' ? moisture15?.value : moisture30?.value}%
-              </span>
-              <span className="text-sm font-semibold text-stone-500">Volumetric Water Content (VWC)</span>
-            </div>
+        {/* Right Column (5 cols): Microclimate Readings */}
+        <Card className="lg:col-span-5 p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            <CardHeader
+              icon={Sun}
+              title="Microclimate Environment"
+              subtitle="Gateway weather sensor array"
+              actionText="Calibrate"
+              onAction={() => {}}
+            />
 
-            {/* Gauge bar */}
-            <div className="space-y-1 pt-2">
-              <div className="w-full h-3 rounded-full bg-stone-200 dark:bg-stone-800 overflow-hidden flex">
-                {/* Dry zone 0-25% */}
-                <div className="w-1/4 h-full bg-amber-400/40 border-r border-white/20" title="Wilting point risk" />
-                {/* Optimal zone 25-45% */}
-                <div className="w-1/2 h-full bg-emerald-500/40 border-r border-white/20 relative">
-                  <div 
-                    className="absolute top-0 bottom-0 w-1.5 bg-blue-600 rounded-full"
-                    style={{ left: `${((Number(selectedDepth === '15' ? moisture15?.value : moisture30?.value) - 25) / 20) * 100}%` }}
-                  />
+            <div className="grid grid-cols-2 gap-2.5">
+              {/* Temp */}
+              <div className="p-3 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/40 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-stone-400 font-medium">Ambient Temp</span>
+                  <Thermometer className="w-3.5 h-3.5 text-rose-500" />
                 </div>
-                {/* Waterlogged zone 45-100% */}
-                <div className="w-1/4 h-full bg-blue-400/40" title="Excess saturation / hypoxia" />
+                <div className="text-xl font-black text-stone-900 dark:text-stone-100">
+                  {temp?.value ?? 24.6}°C
+                </div>
+                <div className="text-[10px] text-emerald-600 font-semibold">Ideal: 18 - 30°C</div>
               </div>
-              <div className="flex justify-between text-[10px] text-stone-400">
-                <span>0% Dry</span>
-                <span className="text-emerald-600 font-bold">Optimal Range (25 - 45%)</span>
-                <span>100% Saturation</span>
+
+              {/* Humidity */}
+              <div className="p-3 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/40 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-stone-400 font-medium">Rel Humidity</span>
+                  <Droplets className="w-3.5 h-3.5 text-sky-500" />
+                </div>
+                <div className="text-xl font-black text-stone-900 dark:text-stone-100">
+                  {humidity?.value ?? 68}%
+                </div>
+                <div className="text-[10px] text-stone-400">VPD: 1.14 kPa</div>
+              </div>
+
+              {/* Soil Temp */}
+              <div className="p-3 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/40 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-stone-400 font-medium">Soil Temp</span>
+                  <Thermometer className="w-3.5 h-3.5 text-amber-500" />
+                </div>
+                <div className="text-xl font-black text-stone-900 dark:text-stone-100">
+                  {soilTemp?.value ?? 22.1}°C
+                </div>
+                <div className="text-[10px] text-emerald-600 font-semibold">Microbial active</div>
+              </div>
+
+              {/* Solar Radiation */}
+              <div className="p-3 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/40 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-stone-400 font-medium">Solar Insolation</span>
+                  <Sun className="w-3.5 h-3.5 text-amber-500" />
+                </div>
+                <div className="text-xl font-black text-stone-900 dark:text-stone-100">
+                  {solar?.value ?? 720} <span className="text-[10px] font-normal text-stone-400">W/m²</span>
+                </div>
+                <div className="text-[10px] text-stone-400">Clear Sky Index</div>
               </div>
             </div>
           </div>
 
-          {/* Soil Agronomic Context */}
-          <div className="p-4 rounded-lg bg-stone-50 dark:bg-stone-950/50 border border-stone-200/80 dark:border-stone-800 space-y-1.5 text-xs">
-            <div className="font-bold text-stone-900 dark:text-stone-100">
-              Soil Matrix Status: Optimal Aerobic Retention
-            </div>
-            <p className="text-stone-600 dark:text-stone-400 leading-relaxed">
-              Available capillary water is adequate for root nutrient transport. Permanent Wilting Point (PWP) for this loamy alluvial soil is 12% VWC. Field capacity is 36% VWC.
-            </p>
-            <div className="pt-2 text-[11px] text-stone-500 flex items-center justify-between">
-              <span>Depletion Rate: -0.4% / day</span>
-              <span className="text-emerald-700 dark:text-emerald-400 font-semibold">No Water Stress</span>
-            </div>
+          <div className="pt-3 border-t border-stone-100 dark:border-stone-800 text-[11px] text-stone-400 flex justify-between">
+            <span>Dew Point: 18.2°C</span>
+            <span>Barometric: 1012 hPa</span>
           </div>
+        </Card>
+      </div>
 
-          {/* Simulated Irrigation Valve Control */}
-          <div className="p-4 rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-850 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold text-stone-900 dark:text-stone-100 block">
-                  Solenoid Irrigation Valve #1
-                </span>
-                <span className="text-[11px] text-stone-500">
-                  {isValveActive ? 'Water flowing via drip line' : 'Valve closed (Standby)'}
-                </span>
+      {/* Row 2: Hydraulic Actuators + Device Hardware Health */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Card 1: Hydraulic Actuators */}
+        <Card className="p-4 sm:p-5 space-y-4">
+          <CardHeader
+            icon={Droplets}
+            title="Field Actuators & Solenoid Valves"
+            subtitle="ESP32 Relay Controller channel #1"
+          />
+
+          <div className="p-3.5 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/40 dark:bg-stone-900/30 flex items-center justify-between gap-4">
+            <div>
+              <div className="text-xs font-bold text-stone-900 dark:text-stone-100">
+                Solenoid Valve Line 01 (North Block Drip)
               </div>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                isValveActive ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
-              }`}>
-                {isValveActive ? 'ACTIVE' : 'IDLE'}
-              </span>
+              <div className="text-[11px] text-stone-400">
+                24V DC normally closed solenoid valve
+              </div>
             </div>
 
             <button
               onClick={() => setIsValveActive(!isValveActive)}
-              className={`w-full py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
                 isValveActive
-                  ? 'bg-rose-700 hover:bg-rose-800 text-white'
-                  : 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                  ? 'bg-[#0fa958] text-white'
+                  : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
               }`}
             >
-              <Power className="w-3.5 h-3.5" />
-              <span>{isValveActive ? 'Close Valve #1' : 'Simulate Open Valve #1'}</span>
+              {isValveActive ? 'VALVE OPEN' : 'VALVE CLOSED'}
             </button>
           </div>
-        </div>
-      </div>
 
-      {/* Environmental & Microclimate Telemetry Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Air Temperature */}
-        <div className="p-5 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">
-              {lang === 'hi' ? 'वायु तापमान' : 'Air Temperature'}
-            </span>
-            <Thermometer className="w-4 h-4 text-amber-500" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-stone-900 dark:text-stone-100">
-              {temp?.value}°C
-            </span>
-            <span className="text-xs text-stone-400">Ambient</span>
-          </div>
-          <div className="mt-2 text-xs text-stone-600 dark:text-stone-400 flex items-center justify-between">
-            <span>Ideal Range: 18 - 30°C</span>
-            <span className="text-emerald-600 font-bold">Normal</span>
-          </div>
-        </div>
-
-        {/* Humidity */}
-        <div className="p-5 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">
-              {lang === 'hi' ? 'हवा में नमी' : 'Relative Humidity'}
-            </span>
-            <Wind className="w-4 h-4 text-teal-500" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-stone-900 dark:text-stone-100">
-              {humidity?.value}%
-            </span>
-            <span className="text-xs text-stone-400">RH</span>
-          </div>
-          <div className="mt-2 text-xs text-stone-600 dark:text-stone-400 flex items-center justify-between">
-            <span>Morning dew present</span>
-            <span className="text-amber-600 font-bold">Watch Fungi</span>
-          </div>
-        </div>
-
-        {/* Soil Temperature */}
-        <div className="p-5 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">
-              {lang === 'hi' ? 'मिट्टी का तापमान' : 'Soil Temperature (15cm)'}
-            </span>
-            <Thermometer className="w-4 h-4 text-orange-500" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-stone-900 dark:text-stone-100">
-              {soilTemp?.value}°C
-            </span>
-            <span className="text-xs text-stone-400">Probe</span>
-          </div>
-          <div className="mt-2 text-xs text-stone-600 dark:text-stone-400 flex items-center justify-between">
-            <span>Root absorption active</span>
-            <span className="text-emerald-600 font-bold">Optimal</span>
-          </div>
-        </div>
-
-        {/* Solar Radiation */}
-        <div className="p-5 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">
-              {lang === 'hi' ? 'सौर विकिरण' : 'Solar Radiation'}
-            </span>
-            <Sun className="w-4 h-4 text-amber-500" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-stone-900 dark:text-stone-100">
-              {solar?.value}
-            </span>
-            <span className="text-xs text-stone-400">W/m²</span>
-          </div>
-          <div className="mt-2 text-xs text-stone-600 dark:text-stone-400 flex items-center justify-between">
-            <span>Photosynthesis: Strong</span>
-            <span className="text-emerald-600 font-bold">Active</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Environmental Disease Risk Assessment */}
-      <div className="p-5 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/30 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300">
-            <AlertTriangle className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
-              {lang === 'hi' ? 'रोग संवेदनशीलता सूचकांक' : 'Environmental Disease Vulnerability Matrix'}
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div className="p-2 rounded-lg bg-stone-50 dark:bg-stone-850 border border-stone-200/60 dark:border-stone-800/60">
+              <span className="text-[10px] text-stone-400">Line Pressure</span>
+              <div className="font-bold text-stone-800 dark:text-stone-200 mt-0.5">{isValveActive ? '2.1 bar' : '0.0 bar'}</div>
             </div>
-            <p className="text-xs text-stone-700 dark:text-stone-300 mt-0.5 leading-relaxed">
-              Combination of 68% air humidity and 24.6°C temperature elevates yellow rust and blight incubation risk by 35% compared to baseline. Keep morning scouting active.
-            </p>
+            <div className="p-2 rounded-lg bg-stone-50 dark:bg-stone-850 border border-stone-200/60 dark:border-stone-800/60">
+              <span className="text-[10px] text-stone-400">Flow Rate</span>
+              <div className="font-bold text-stone-800 dark:text-stone-200 mt-0.5">{isValveActive ? '18.5 L/min' : '0 L/min'}</div>
+            </div>
+            <div className="p-2 rounded-lg bg-stone-50 dark:bg-stone-850 border border-stone-200/60 dark:border-stone-800/60">
+              <span className="text-[10px] text-stone-400">Mode</span>
+              <div className="font-bold text-emerald-600 mt-0.5">Automated</div>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="flex items-center gap-2 self-start md:self-center">
-          <span className="px-3 py-1 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 text-xs font-extrabold whitespace-nowrap">
-            MODERATE RISK
-          </span>
-        </div>
+        {/* Card 2: Field Gateway Hardware Telemetry */}
+        <Card className="p-4 sm:p-5 space-y-4">
+          <CardHeader
+            icon={Cpu}
+            title="Gateway Device Telemetry"
+            subtitle="Hardware health & battery charge"
+          />
+
+          <div className="space-y-2.5 text-xs">
+            <div className="flex justify-between items-center py-1 border-b border-stone-100 dark:border-stone-800">
+              <span className="text-stone-500">Gateway Battery</span>
+              <strong className="text-emerald-600 font-mono">{farm.batteryLevel}% (LiFePO4 Solar)</strong>
+            </div>
+            <div className="flex justify-between items-center py-1 border-b border-stone-100 dark:border-stone-800">
+              <span className="text-stone-500">LoRa RF Signal Strength</span>
+              <strong className="text-stone-800 dark:text-stone-200 font-mono">-{farm.signalStrength} dBm (Good)</strong>
+            </div>
+            <div className="flex justify-between items-center py-1 border-b border-stone-100 dark:border-stone-800">
+              <span className="text-stone-500">Total Plots Linked</span>
+              <strong className="text-stone-800 dark:text-stone-200">{farm.plots.length} Active Plots</strong>
+            </div>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-stone-500">Firmware Build</span>
+              <span className="font-mono text-stone-400 text-[11px]">AGRO-ESP32-v2.4.1-IN</span>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );

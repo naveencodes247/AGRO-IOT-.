@@ -42,12 +42,12 @@ export const FieldConditionHub: React.FC<FieldConditionHubProps> = ({
   const healthScore = primaryPlot?.healthScore ?? 94;
 
   return (
-    <div className="bg-white dark:bg-[#151815] rounded-xl border border-stone-200 dark:border-stone-800 p-5 sm:p-6 shadow-xs transition-colors">
+    <div className="bg-white dark:bg-[#141b16] rounded-2xl border border-stone-200/80 dark:border-stone-800/80 p-5 sm:p-6 shadow-xs transition-colors">
       {/* Top Header: Section Tag, Farm Location, and Real-time Telemetry Status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-100 dark:border-stone-800">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-[#143e24] text-white">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#0fa958] text-white">
               {lang === 'hi' ? 'खेत की वर्तमान स्थिति' : 'CURRENT FIELD CONDITION'}
             </span>
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
