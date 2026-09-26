@@ -8,12 +8,14 @@ import taskSoilNutrient from './images/task_soil_nutrient_1790369758286.jpg';
 import taskTomatoHarvest from './images/task_tomato_harvest_1790369777210.jpg';
 import officialLogoImage from './images/agro_iot_official_logo.jpg';
 import wheatEarSpikeImage from './images/wheat_ear_spike.jpg';
+import heroBannerImage from './images/agro_iot_hero_banner.jpg';
 
 export const ASSETS = {
   officialLogo: officialLogoImage,
   farmerBackground: farmerBgImage,
   satelliteMap: satelliteAerialMap,
   wheatSpike: wheatEarSpikeImage,
+  heroBanner: heroBannerImage,
   tasks: {
     irrigation: taskIrrigationSprinkler,
     soil: taskSoilNutrient,

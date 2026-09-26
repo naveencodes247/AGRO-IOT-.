@@ -1,6 +1,13 @@
+<div align="center">
+  <img src="src/assets/images/agro_iot_hero_banner.jpg" alt="AGRO-IOT Smart Farming Platform" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
+</div>
+
+<br />
+
 # 🌾 AGRO-IOT — Precision Smart Agriculture & IoT Farm Command Center
 
 > An intelligent, full-stack Precision Agriculture Command Center and IoT telemetry monitoring suite designed for modern Indian and global farmers. Featuring real-time sensor streams, Edge AI analytics, an interactive crop pathology diagnostic scanner, an India-wide agronomic intelligence map, and an animated Kisan AI Voice & Chatbot Assistant.
+
 
 ---
 
