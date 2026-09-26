@@ -81,6 +81,7 @@
 
 4. **Open in Browser**:
    Open [http://localhost:3000](http://localhost:3000) to view the Command Center.
+     [ https://agro-iotweb.netlify.app/ ]
 
 ### Building for Production
 
