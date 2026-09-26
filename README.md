@@ -65,8 +65,8 @@
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/naveencodes247/AGRO-IOT-..git
-   cd AGRO-IOT-
+   git clone https://github.com/naveencodes247/AGRO-IOT.git
+   cd AGRO-IOT
    ```
 
 2. **Install Dependencies**:
